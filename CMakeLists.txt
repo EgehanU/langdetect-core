@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.15)
+
+project(langdetect-core CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_library(langdetect_lib STATIC 
+    src/script.cpp
+    src/utf8.cpp
+)
+
+target_include_directories(langdetect_lib PUBLIC include/)
+
+add_executable(langdetect app/langdetect_cli.cpp)
+target_link_libraries(langdetect PRIVATE langdetect_lib)
+
+add_executable(test_utf8 tests/test_utf8.cpp)
+target_link_libraries(test_utf8 PRIVATE langdetect_lib)

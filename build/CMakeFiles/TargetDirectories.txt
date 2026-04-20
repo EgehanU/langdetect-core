@@ -1,0 +1,5 @@
+C:/Users/egeha/Documents/Projects/langdetect-core/build/CMakeFiles/langdetect_lib.dir
+C:/Users/egeha/Documents/Projects/langdetect-core/build/CMakeFiles/langdetect.dir
+C:/Users/egeha/Documents/Projects/langdetect-core/build/CMakeFiles/test_utf8.dir
+C:/Users/egeha/Documents/Projects/langdetect-core/build/CMakeFiles/edit_cache.dir
+C:/Users/egeha/Documents/Projects/langdetect-core/build/CMakeFiles/rebuild_cache.dir

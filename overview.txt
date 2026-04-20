@@ -619,3 +619,26 @@ This project is a **modular, efficient, and extensible language detection engine
 * Honest confidence reporting
 
 It prioritizes correctness, clarity, and performance over complexity, making it a strong foundation for further expansion.
+
+---
+
+## 21. Folder Structure
+
+```text
+language_detection_engine/
+|-- app/
+|-- benchmarks/
+|-- cmake/
+|-- corpora/
+|   |-- cleaned/
+|   `-- raw/
+|-- docs/
+|-- examples/
+|-- include/
+|   `-- langdetect/
+|-- profiles/
+|-- python/
+|-- src/
+|-- tests/
+`-- tools/
+```

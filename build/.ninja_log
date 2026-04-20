@@ -1,0 +1,10 @@
+# ninja log v7
+3	77	7983363734370766	CMakeFiles/langdetect_lib.dir/src/script.cpp.obj	6eaa4285e09b72ed
+8	86	7983363734411527	CMakeFiles/langdetect.dir/app/langdetect_cli.cpp.obj	a3cbaed58d4e5318
+78	349	7983363735107792	liblangdetect_lib.a	56d944fafd765730
+350	489	7983363737820261	langdetect.exe	a30c053fd5e2818f
+5	474	7983502296651332	CMakeFiles/test_utf8.dir/tests/test_utf8.cpp.obj	735a23ff817da831
+2	476	7983502296621309	CMakeFiles/langdetect_lib.dir/src/utf8.cpp.obj	405b9f02a6206f36
+477	760	7983502301371968	liblangdetect_lib.a	c07fae588f3e4a40
+760	1048	7983502304203760	langdetect.exe	a30c053fd5e2818f
+767	1051	7983502304278056	test_utf8.exe	1378fffec304b320
