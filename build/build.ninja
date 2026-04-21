@@ -44,16 +44,16 @@ cmake_ninja_workdir = C$:/Users/egeha/Documents/Projects/langdetect-core/build/
 
 build cmake_object_order_depends_target_langdetect_lib: phony || .
 
-build CMakeFiles/langdetect_lib.dir/src/script.cpp.obj: CXX_COMPILER__langdetect_lib_unscanned_ C$:/Users/egeha/Documents/Projects/langdetect-core/src/script.cpp || cmake_object_order_depends_target_langdetect_lib
-  DEP_FILE = CMakeFiles\langdetect_lib.dir\src\script.cpp.obj.d
+build CMakeFiles/langdetect_lib.dir/src/utf8.cpp.obj: CXX_COMPILER__langdetect_lib_unscanned_ C$:/Users/egeha/Documents/Projects/langdetect-core/src/utf8.cpp || cmake_object_order_depends_target_langdetect_lib
+  DEP_FILE = CMakeFiles\langdetect_lib.dir\src\utf8.cpp.obj.d
   FLAGS = -std=gnu++17
   INCLUDES = -IC:/Users/egeha/Documents/Projects/langdetect-core/include
   OBJECT_DIR = CMakeFiles\langdetect_lib.dir
   OBJECT_FILE_DIR = CMakeFiles\langdetect_lib.dir\src
   TARGET_SUPPORT_DIR = CMakeFiles\langdetect_lib.dir
 
-build CMakeFiles/langdetect_lib.dir/src/utf8.cpp.obj: CXX_COMPILER__langdetect_lib_unscanned_ C$:/Users/egeha/Documents/Projects/langdetect-core/src/utf8.cpp || cmake_object_order_depends_target_langdetect_lib
-  DEP_FILE = CMakeFiles\langdetect_lib.dir\src\utf8.cpp.obj.d
+build CMakeFiles/langdetect_lib.dir/src/detector.cpp.obj: CXX_COMPILER__langdetect_lib_unscanned_ C$:/Users/egeha/Documents/Projects/langdetect-core/src/detector.cpp || cmake_object_order_depends_target_langdetect_lib
+  DEP_FILE = CMakeFiles\langdetect_lib.dir\src\detector.cpp.obj.d
   FLAGS = -std=gnu++17
   INCLUDES = -IC:/Users/egeha/Documents/Projects/langdetect-core/include
   OBJECT_DIR = CMakeFiles\langdetect_lib.dir
@@ -68,7 +68,7 @@ build CMakeFiles/langdetect_lib.dir/src/utf8.cpp.obj: CXX_COMPILER__langdetect_l
 #############################################
 # Link the static library liblangdetect_lib.a
 
-build liblangdetect_lib.a: CXX_STATIC_LIBRARY_LINKER__langdetect_lib_ CMakeFiles/langdetect_lib.dir/src/script.cpp.obj CMakeFiles/langdetect_lib.dir/src/utf8.cpp.obj
+build liblangdetect_lib.a: CXX_STATIC_LIBRARY_LINKER__langdetect_lib_ CMakeFiles/langdetect_lib.dir/src/utf8.cpp.obj CMakeFiles/langdetect_lib.dir/src/detector.cpp.obj
   OBJECT_DIR = CMakeFiles\langdetect_lib.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
@@ -146,6 +146,41 @@ build test_utf8.exe: CXX_EXECUTABLE_LINKER__test_utf8_ CMakeFiles/test_utf8.dir/
   TARGET_PDB = test_utf8.exe.dbg
   TARGET_SUPPORT_DIR = CMakeFiles\test_utf8.dir
 
+# =============================================================================
+# Object build statements for EXECUTABLE target test_detector
+
+
+#############################################
+# Order-only phony target for test_detector
+
+build cmake_object_order_depends_target_test_detector: phony || cmake_object_order_depends_target_langdetect_lib
+
+build CMakeFiles/test_detector.dir/tests/test_detector.cpp.obj: CXX_COMPILER__test_detector_unscanned_ C$:/Users/egeha/Documents/Projects/langdetect-core/tests/test_detector.cpp || cmake_object_order_depends_target_test_detector
+  DEP_FILE = CMakeFiles\test_detector.dir\tests\test_detector.cpp.obj.d
+  FLAGS = -std=gnu++17
+  INCLUDES = -IC:/Users/egeha/Documents/Projects/langdetect-core/include
+  OBJECT_DIR = CMakeFiles\test_detector.dir
+  OBJECT_FILE_DIR = CMakeFiles\test_detector.dir\tests
+  TARGET_SUPPORT_DIR = CMakeFiles\test_detector.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target test_detector
+
+
+#############################################
+# Link the executable test_detector.exe
+
+build test_detector.exe: CXX_EXECUTABLE_LINKER__test_detector_ CMakeFiles/test_detector.dir/tests/test_detector.cpp.obj | liblangdetect_lib.a || liblangdetect_lib.a
+  LINK_LIBRARIES = liblangdetect_lib.a  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  OBJECT_DIR = CMakeFiles\test_detector.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_FILE = test_detector.exe
+  TARGET_IMPLIB = libtest_detector.dll.a
+  TARGET_PDB = test_detector.exe.dbg
+  TARGET_SUPPORT_DIR = CMakeFiles\test_detector.dir
+
 
 #############################################
 # Utility command for edit_cache
@@ -176,6 +211,8 @@ build langdetect: phony langdetect.exe
 
 build langdetect_lib: phony liblangdetect_lib.a
 
+build test_detector: phony test_detector.exe
+
 build test_utf8: phony test_utf8.exe
 
 # =============================================================================
@@ -186,7 +223,7 @@ build test_utf8: phony test_utf8.exe
 #############################################
 # Folder: C:/Users/egeha/Documents/Projects/langdetect-core/build
 
-build all: phony liblangdetect_lib.a langdetect.exe test_utf8.exe
+build all: phony liblangdetect_lib.a langdetect.exe test_utf8.exe test_detector.exe
 
 # =============================================================================
 # Built-in targets

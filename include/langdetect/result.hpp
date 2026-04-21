@@ -3,6 +3,7 @@
 
 #include <string>
 
+
 enum class ResultKind {
     Language,
     Script,
@@ -15,5 +16,6 @@ struct DetectionScore {
     ResultKind kind;
     double score;
 };
+
 
 #endif

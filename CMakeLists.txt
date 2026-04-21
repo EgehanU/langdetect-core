@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(langdetect_lib STATIC 
-    src/script.cpp
     src/utf8.cpp
+    src/detector.cpp
 )
 
 target_include_directories(langdetect_lib PUBLIC include/)
@@ -17,3 +17,6 @@ target_link_libraries(langdetect PRIVATE langdetect_lib)
 
 add_executable(test_utf8 tests/test_utf8.cpp)
 target_link_libraries(test_utf8 PRIVATE langdetect_lib)
+
+add_executable(test_detector tests/test_detector.cpp)
+target_link_libraries(test_detector PRIVATE langdetect_lib)
