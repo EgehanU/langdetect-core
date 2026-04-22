@@ -72,6 +72,7 @@ langdetect-core/
 |   |-- es.json
 |   |-- fr.json
 |   `-- it.json
+|-- pyproject.toml
 |-- python/
 |   `-- bindings.cpp
 |-- src/
@@ -90,7 +91,7 @@ langdetect-core/
 - C++17 compiler
 - `nlohmann_json`
 - Python 3, needed for profile/corpus tools and the Python bindings
-- `pybind11`, needed for the Python bindings
+- `scikit-build-core` and `pybind11`, needed when building the Python package
 
 On my setup this was built with MSYS2/UCRT64 and GCC.
 
@@ -106,7 +107,7 @@ cmake --build build
 Main build targets:
 
 - `langdetect_lib`
-- `langdetect`
+- `langdetect_cli`
 - `test_utf8`
 - `test_detector`
 - `bench_detector`
@@ -116,7 +117,7 @@ Main build targets:
 Example:
 
 ```powershell
-.\build\langdetect.exe "Artificial intelligence is changing how people work"
+.\build\langdetect_cli.exe "Artificial intelligence is changing how people work"
 ```
 
 Example output:
@@ -164,7 +165,13 @@ The module exposes:
 - `DetectionScore`, with `label`, `kind`, and `score` attributes.
 - `ResultKind`, with `Language`, `Script`, `Unknown`, and `Ambiguous` values.
 
-Example usage after building the extension module:
+Install the Python module from the repo root:
+
+```powershell
+python -m pip install .
+```
+
+Example usage:
 
 ```python
 from langdetect import LanguageDetector

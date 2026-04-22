@@ -1,0 +1,17 @@
+[build-system]
+requires = ["scikit-build-core>=0.5.0", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "langdetect-core"
+version = "0.1.0"
+description = "Fast C++ language detection engine with Python bindings"
+authors = [{name = "Egehan"}]
+requires-python = ">=3.8"
+
+[tool.scikit-build]
+wheel.packages = []
+cmake.build-type = "Release"
+
+[tool.scikit-build.cmake.define]
+LANGDETECT_BUILD_PYTHON = "ON"
