@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdint>
 
+// Decode UTF-8 input into Unicode code points used by the detector
 std::vector<uint32_t> decode(std::string_view data);
 
 #endif

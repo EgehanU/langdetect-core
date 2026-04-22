@@ -3,6 +3,8 @@
 #include "langdetect/utf8.hpp"
 #include "langdetect/result.hpp"
 #include <cstdint>
+
+// Broad script buckets used before language-specific scoring
 enum class Script{
     Latin,
     Cyrillic,
@@ -18,7 +20,7 @@ enum class Script{
 };
 
 
-//LATIN
+// Latin letters used by the trained European language profiles
 inline bool is_latin(uint32_t cp){
     return
         (cp >= 0x0041 && cp <= 0x005A) || // A-Z
@@ -28,20 +30,20 @@ inline bool is_latin(uint32_t cp){
         (cp >= 0x1E00 && cp <= 0x1EFF);   // Extended Additional
 }
 
-//CYRILLIC
+// Cyrillic blocks cover Russian and related scripts
 inline bool is_cyrillic(uint32_t cp){
     return
         (cp >= 0x0400 && cp <= 0x04FF) ||
         (cp >= 0x0500 && cp <= 0x052F);
 }
 
-//GREEK
+// Greek block check
 inline bool is_greek(uint32_t cp){
     return
         (cp >= 0x0370 && cp <= 0x03FF);
 }
 
-//ARABIC
+// Arabic blocks used for script-level detection
 inline bool is_arabic(uint32_t cp){
     return
         (cp >= 0x0600 && cp <= 0x06FF) ||
@@ -49,26 +51,26 @@ inline bool is_arabic(uint32_t cp){
         (cp >= 0x08A0 && cp <= 0x08FF);
 }
 
-//DEVANAGARI
+// Devanagari block check
 inline bool is_devanagari(uint32_t cp){
     return
         (cp >= 0x0900 && cp <= 0x097F);
 }
 
-//THAI
+// Thai block check
 inline bool is_thai(uint32_t cp){
     return
         (cp >= 0x0E00 && cp <= 0x0E7F);
 }
 
-//KOREAN (HANGUL)
+// Hangul syllables and jamo for Korean
 inline bool is_korean(uint32_t cp) {
     return
         (cp >= 0xAC00 && cp <= 0xD7AF) || // syllables
         (cp >= 0x1100 && cp <= 0x11FF);   // jamo
 }
 
-// JAPANESE
+// Japanese kana checks
 inline bool is_hiragana(uint32_t cp){
     return (cp >= 0x3040 && cp <= 0x309F);
 }
@@ -81,7 +83,7 @@ inline bool is_japanese(uint32_t cp){
     return is_hiragana(cp) || is_katakana(cp);
 }
 
-// CJK HAN
+// Shared Han ideographs used for Chinese and Japanese signals
 inline bool is_cjk_han(uint32_t cp){
     return
         (cp >= 0x4E00 && cp <= 0x9FFF) ||

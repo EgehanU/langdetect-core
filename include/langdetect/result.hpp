@@ -4,6 +4,7 @@
 #include <string>
 
 
+// Keeps language, script, and fallback results explicit for callers
 enum class ResultKind {
     Language,
     Script,
@@ -11,6 +12,7 @@ enum class ResultKind {
     Ambiguous
 };
 
+// A single ranked detection result
 struct DetectionScore {
     std::string label;
     ResultKind kind;

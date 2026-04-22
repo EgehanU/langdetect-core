@@ -20,3 +20,9 @@ target_link_libraries(test_utf8 PRIVATE langdetect_lib)
 
 add_executable(test_detector tests/test_detector.cpp)
 target_link_libraries(test_detector PRIVATE langdetect_lib)
+
+find_package(nlohmann_json REQUIRED)
+target_link_libraries(langdetect_lib PRIVATE nlohmann_json::nlohmann_json)
+
+add_executable(bench_detector benchmarks/bench_detector.cpp)
+target_link_libraries(bench_detector PRIVATE langdetect_lib)

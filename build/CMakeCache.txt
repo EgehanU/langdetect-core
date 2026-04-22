@@ -228,6 +228,9 @@ langdetect-core_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 langdetect-core_SOURCE_DIR:STATIC=C:/Users/egeha/Documents/Projects/langdetect-core
 
+//The directory containing a CMake configuration file for nlohmann_json.
+nlohmann_json_DIR:PATH=C:/msys64/ucrt64/share/cmake/nlohmann_json
+
 
 ########################
 # INTERNAL cache entries
@@ -375,4 +378,6 @@ CMAKE_STRIP-ADVANCED:INTERNAL=1
 CMAKE_TAPI-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+//Details about finding nlohmann_json
+FIND_PACKAGE_MESSAGE_DETAILS_nlohmann_json:INTERNAL=[C:/msys64/ucrt64/share/cmake/nlohmann_json/nlohmann_jsonConfig.cmake][v3.12.0()]
 
