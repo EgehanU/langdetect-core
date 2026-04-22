@@ -1,95 +1,154 @@
 # langdetect-core
 
-`langdetect-core` is a lightweight C++17 language detection core. It decodes
-UTF-8 input, detects Unicode script families, and scores a small set of
-Latin-script languages with character n-gram profiles.
+`langdetect-core` is a small C++17 language detection project. It is not trying
+to be a huge ML model or a perfect replacement for bigger libraries. The main
+goal is to have a fast native core that can detect a few Latin languages, and
+also give quick script-level answers for non-Latin text.
 
-The project is intentionally small and dependency-light. It is designed as a
-reusable C++ library first, with room for CLI tooling, profile generation,
-Python bindings, and evaluation tools later.
+At the moment the project is in MVP state, but the basic pipeline is working:
 
-## Current Features
+- UTF-8 input is decoded into Unicode code points.
+- Non-Latin scripts are detected mostly by Unicode ranges.
+- Latin text is compared against generated n-gram profiles.
+- A small CLI returns JSON output.
+- There are tests and a benchmark target.
 
-- UTF-8 decoding into Unicode code points.
-- Script detection for Latin, Cyrillic, Arabic, Greek, Devanagari, Thai,
-  Korean, Japanese, and CJK Han text.
-- Latin-language scoring for:
-  - English: `en`
-  - German: `de`
-  - French: `fr`
-  - Spanish: `es`
-  - Italian: `it`
-- Ranked detection results with explicit result kinds:
-  - `Language`
-  - `Script`
-  - `Unknown`
-  - `Ambiguous`
-- Conservative handling for short or weak input.
-- CMake build with library and test targets.
+## What it detects now
 
-## Project Status
+Language-level detection is currently for these Latin languages:
 
-This repository currently contains the core C++ implementation and tests. The
-`langdetect` executable target exists, but the command-line interface is still a
-placeholder. The `profiles`, `corpora`, `tools`, `python`, `examples`, and
-`benchmarks` directories are reserved for future work.
+```text
+en, de, fr, es, it
+```
 
-Scores are useful for ranking candidates, but they are not calibrated
-probabilities.
+Script-level detection exists for:
 
-## Repository Layout
+```text
+cyrillic, arabic, greek, devanagari, thai, korean, japanese, cjk_han
+```
+
+There are also fallback results:
+
+```text
+unknown, ambiguous
+```
+
+The scores are useful for ranking, but they should not be read as real
+probabilities. They are normalized similarity scores.
+
+## How it works
+
+The detector first decodes the text as UTF-8. After that it counts script
+signals. If the input is clearly non-Latin, it can return early with a script
+result, which is why Russian, Arabic, Japanese and Chinese benchmarks are much
+faster.
+
+For Latin text it does more work:
+
+1. Normalize Latin letters.
+2. Remove separators and keep useful word gaps.
+3. Build weighted 1-gram, 2-gram and 3-gram profiles.
+4. Compare that input profile with the JSON profiles in `profiles/`.
+5. Return ranked results, or `unknown` / `ambiguous` if the signal is weak.
+
+Very short Latin text is still not reliable, so the detector intentionally
+returns `unknown` for many tiny inputs.
+
+## Repository layout
 
 ```text
 langdetect-core/
 |-- app/
 |   `-- langdetect_cli.cpp
+|-- benchmarks/
+|   `-- bench_detector.cpp
+|-- corpora/
+|   `-- raw/
 |-- include/
 |   `-- langdetect/
-|       |-- detector.hpp
-|       |-- result.hpp
-|       |-- script.hpp
-|       `-- utf8.hpp
+|-- profiles/
+|   |-- de.json
+|   |-- en.json
+|   |-- es.json
+|   |-- fr.json
+|   `-- it.json
 |-- src/
-|   |-- detector.cpp
-|   `-- utf8.cpp
 |-- tests/
-|   |-- test_detector.cpp
-|   `-- test_utf8.cpp
+|-- tools/
+|   |-- build_profile.py
+|   |-- evaluate_profiles.py
+|   `-- scrape_corpus.py
 |-- CMakeLists.txt
-|-- LICENSE
 `-- README.md
 ```
 
 ## Requirements
 
 - CMake 3.15 or newer
-- A C++17-compatible compiler
-- Ninja, Make, Visual Studio, or another CMake-supported build system
+- C++17 compiler
+- `nlohmann_json`
+- Python 3, only needed for profile/corpus tools
+
+On my setup this was built with MSYS2/UCRT64 and GCC.
 
 ## Build
 
-From the repository root:
-
-```powershell
-cmake -S . -B build
-cmake --build build
-```
-
-To explicitly use Ninja:
+From the repo root:
 
 ```powershell
 cmake -S . -B build -G Ninja
 cmake --build build
 ```
 
-The build creates these main targets:
+Main build targets:
 
-- `langdetect_lib`: static library with the detection implementation
-- `langdetect`: CLI executable target, currently scaffolded
-- `test_utf8`: UTF-8 decoder test executable
-- `test_detector`: detector test executable
+- `langdetect_lib`
+- `langdetect`
+- `test_utf8`
+- `test_detector`
+- `bench_detector`
 
-## Run Tests
+## CLI usage
+
+Example:
+
+```powershell
+.\build\langdetect.exe "Artificial intelligence is changing how people work"
+```
+
+Example output:
+
+```json
+{
+  "best": { "kind": "language", "label": "en", "score": 0.51 },
+  "scores": [
+    { "kind": "language", "label": "en", "score": 0.51 },
+    { "kind": "language", "label": "de", "score": 0.20 }
+  ]
+}
+```
+
+The exact scores can change when profiles change.
+
+## C++ usage
+
+```cpp
+#include "langdetect/detector.hpp"
+#include <iostream>
+
+int main() {
+    LanguageDetector detector("profiles");
+    auto results = detector.detect("The quick brown fox jumps over the lazy dog");
+
+    if (!results.empty()) {
+        std::cout << results[0].label << " " << results[0].score << "\n";
+    }
+}
+```
+
+The detector returns `std::vector<DetectionScore>`.
+
+## Tests
 
 On Windows:
 
@@ -98,113 +157,230 @@ On Windows:
 .\build\test_detector.exe
 ```
 
-On Unix-like systems:
+Benchmark:
 
-```bash
-./build/test_utf8
-./build/test_detector
+```powershell
+.\build\bench_detector.exe
 ```
 
-Expected output includes:
+There is also a small Python evaluation script:
+
+```powershell
+python tools\evaluate_profiles.py
+```
+
+## Profile tools
+
+The profile data is generated from raw corpus text.
+
+```powershell
+python tools\scrape_corpus.py
+python tools\build_profile.py
+```
+
+`scrape_corpus.py` downloads Wikipedia text for the selected languages.
+`build_profile.py` turns those raw text files into JSON n-gram profiles.
+
+This is enough for the MVP, but the corpus is still small and should be improved
+before treating it as production quality.
+
+## Known limitations
+
+- Latin languages are the slow path because they use n-gram profile scoring.
+- The current profiles only cover `en`, `de`, `fr`, `es`, and `it`.
+- Non-Latin detection is mostly script-level, not language-level.
+- Chinese and Japanese are not fully separated when the input is mostly Han
+  characters.
+- Scores are not calibrated probabilities.
+- Short text is hard, especially for Latin languages.
+- The CLI JSON is written manually and is still pretty simple.
+
+## Benchmarks
+
+Hardware:
+
+- CPU: 11th Gen Intel Core i7-11800H @ 2.30GHz
+- RAM: 16GB
+- OS: Windows 11, MSYS2 UCRT64
+- Compiler: GCC 15.2.0
+- Standard: C++17
+
+Raw benchmark output:
 
 ```text
-All tests passed
-All detector tests passed
+=== langdetect benchmark ===
+
+Very short EN  (<100 chars)
+  size:       11 bytes
+  iterations: 10000
+  avg time:   1752.54 ns
+
+Very short DE  (<100 chars)
+  size:       10 bytes
+  iterations: 10000
+  avg time:   1775.89 ns
+
+Very short FR  (<100 chars)
+  size:       13 bytes
+  iterations: 10000
+  avg time:   1895.89 ns
+
+Very short ES  (<100 chars)
+  size:       10 bytes
+  iterations: 10000
+  avg time:   1710.25 ns
+
+Very short IT  (<100 chars)
+  size:       10 bytes
+  iterations: 10000
+  avg time:   1707.38 ns
+
+Very short RU  (<100 chars)
+  size:       19 bytes
+  iterations: 10000
+  avg time:   984.03 ns
+
+Very short AR  (<100 chars)
+  size:       25 bytes
+  iterations: 10000
+  avg time:   1077.73 ns
+
+Very short JA  (<100 chars)
+  size:       21 bytes
+  iterations: 10000
+  avg time:   815.59 ns
+
+Very short ZH  (<100 chars)
+  size:       12 bytes
+  iterations: 10000
+  avg time:   690.82 ns
+
+Normal EN      (100-500 chars)
+  size:       181 bytes
+  iterations: 5000
+  avg time:   322802 ns
+
+Normal DE      (100-500 chars)
+  size:       190 bytes
+  iterations: 5000
+  avg time:   331631 ns
+
+Normal FR      (100-500 chars)
+  size:       143 bytes
+  iterations: 5000
+  avg time:   257503 ns
+
+Normal ES      (100-500 chars)
+  size:       140 bytes
+  iterations: 5000
+  avg time:   259844 ns
+
+Normal IT      (100-500 chars)
+  size:       136 bytes
+  iterations: 5000
+  avg time:   249071 ns
+
+Normal RU      (100-500 chars)
+  size:       277 bytes
+  iterations: 5000
+  avg time:   5444.6 ns
+
+Normal AR      (100-500 chars)
+  size:       221 bytes
+  iterations: 5000
+  avg time:   5163.9 ns
+
+Normal JA      (100-500 chars)
+  size:       222 bytes
+  iterations: 5000
+  avg time:   3017.5 ns
+
+Normal ZH      (100-500 chars)
+  size:       126 bytes
+  iterations: 5000
+  avg time:   2340.04 ns
+
+Paragraph EN   (500-5000 chars)
+  size:       665 bytes
+  iterations: 1000
+  avg time:   863416 ns
+
+Paragraph DE   (500-5000 chars)
+  size:       445 bytes
+  iterations: 1000
+  avg time:   623422 ns
+
+Paragraph FR   (500-5000 chars)
+  size:       526 bytes
+  iterations: 1000
+  avg time:   663179 ns
+
+Paragraph ES   (500-5000 chars)
+  size:       497 bytes
+  iterations: 1000
+  avg time:   644613 ns
+
+Paragraph IT   (500-5000 chars)
+  size:       498 bytes
+  iterations: 1000
+  avg time:   634124 ns
+
+Paragraph RU   (500-5000 chars)
+  size:       1004 bytes
+  iterations: 1000
+  avg time:   19963.8 ns
+
+Paragraph AR   (500-5000 chars)
+  size:       617 bytes
+  iterations: 1000
+  avg time:   17652.9 ns
+
+Paragraph JA   (500-5000 chars)
+  size:       508 bytes
+  iterations: 1000
+  avg time:   7900.5 ns
+
+Paragraph ZH   (500-5000 chars)
+  size:       453 bytes
+  iterations: 1000
+  avg time:   6117.2 ns
+
+Large doc EN   (100KB+)
+  size:       102410 bytes
+  iterations: 100
+  avg time:   5.49685e+07 ns
+
+Large doc RU   (100KB+)
+  size:       102408 bytes
+  iterations: 100
+  avg time:   1.48842e+06 ns
+
+Large doc JA   (100KB+)
+  size:       102616 bytes
+  iterations: 100
+  avg time:   1.01538e+06 ns
 ```
 
-## C++ API Example
+The main thing visible here is that Latin is slower. That makes sense because
+Latin text goes through the whole profile building and cosine similarity path.
+Script-only results are much cheaper.
 
-```cpp
-#include "langdetect/detector.hpp"
-#include <iostream>
+## Conclusion and possible improvements
 
-int main() {
-    LanguageDetector detector;
-    auto results = detector.detect("The quick brown fox jumps over the lazy dog");
+The MVP is working, but the Latin hot path needs more work. Some likely next
+steps:
 
-    if (!results.empty()) {
-        std::cout << results[0].label << " " << results[0].score << "\n";
-    }
+- Top-K pruning: compare only against the most frequent n-grams, not every
+  n-gram in the profile.
+- Better data structures: replace `unordered_map` with sorted arrays or a more
+  cache-friendly structure in the hot path.
+- Reuse more buffers while building input profiles.
+- Add larger and cleaner corpus data for the Latin profiles.
+- Add more language-level support outside Latin later.
 
-    return 0;
-}
-```
-
-The detector returns a `std::vector<DetectionScore>`:
-
-```cpp
-enum class ResultKind {
-    Language,
-    Script,
-    Unknown,
-    Ambiguous
-};
-
-struct DetectionScore {
-    std::string label;
-    ResultKind kind;
-    double score;
-};
-```
-
-## Detection Behavior
-
-The detector first decodes UTF-8 input into Unicode code points. It then counts
-script signals and uses that information to decide whether to return a script
-result or run Latin-language scoring.
-
-For Latin text, the detector:
-
-1. Normalizes Latin characters.
-2. Removes low-signal separators.
-3. Builds weighted 1-gram, 2-gram, and 3-gram profiles.
-4. Compares the input profile against built-in seed profiles.
-5. Returns ranked results, or `unknown` / `ambiguous` when the signal is weak.
-
-Short Latin input is intentionally treated as unreliable. For example, very
-short strings such as `hi` return `unknown`.
-
-## Supported Labels
-
-Language labels:
-
-```text
-en, de, fr, es, it
-```
-
-Script labels:
-
-```text
-cyrillic, arabic, greek, devanagari, thai, korean, japanese, cjk_han
-```
-
-Fallback labels:
-
-```text
-unknown, ambiguous
-```
-
-## Known Limitations
-
-- The CLI target is not implemented yet.
-- Built-in Latin profiles are small seed profiles, not production-grade corpus
-  profiles.
-- Scores are relative ranking scores, not true probabilities.
-- Short text can be unreliable.
-- Similar Latin languages may be confused.
-- Han-only CJK text is reported as script-level `cjk_han`, not as a specific
-  language.
-- Mixed-language segmentation is not implemented.
-
-## Roadmap
-
-- Implement the CLI input and JSON output contract.
-- Add generated language profiles from licensed corpora.
-- Add profile-building and evaluation tools.
-- Expand detector tests for more scripts and edge cases.
-- Add benchmarks.
-- Add Python bindings after the C++ API stabilizes.
+The Python wrapper is planned as the following step, after the C++ API and the
+profile format are a bit more stable.
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE).
+MIT License. See [LICENSE](LICENSE).
