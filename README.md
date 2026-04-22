@@ -72,6 +72,8 @@ langdetect-core/
 |   |-- es.json
 |   |-- fr.json
 |   `-- it.json
+|-- python/
+|   `-- bindings.cpp
 |-- src/
 |-- tests/
 |-- tools/
@@ -87,7 +89,8 @@ langdetect-core/
 - CMake 3.15 or newer
 - C++17 compiler
 - `nlohmann_json`
-- Python 3, only needed for profile/corpus tools
+- Python 3, needed for profile/corpus tools and the Python bindings
+- `pybind11`, needed for the Python bindings
 
 On my setup this was built with MSYS2/UCRT64 and GCC.
 
@@ -147,6 +150,31 @@ int main() {
 ```
 
 The detector returns `std::vector<DetectionScore>`.
+
+## Python bindings
+
+The Python wrapper is implemented with pybind11 in `python/bindings.cpp`. It
+builds a `langdetect` Python module around the same native detector used by the
+CLI and C++ API.
+
+The module exposes:
+
+- `LanguageDetector`, constructed with a profiles directory.
+- `LanguageDetector.detect(text)`, which returns ranked detection results.
+- `DetectionScore`, with `label`, `kind`, and `score` attributes.
+- `ResultKind`, with `Language`, `Script`, `Unknown`, and `Ambiguous` values.
+
+Example usage after building the extension module:
+
+```python
+from langdetect import LanguageDetector
+
+detector = LanguageDetector("profiles")
+results = detector.detect("Artificial intelligence is changing how people work")
+
+for result in results:
+    print(result.label, result.kind, result.score)
+```
 
 ## Tests
 
@@ -377,9 +405,6 @@ steps:
 - Reuse more buffers while building input profiles.
 - Add larger and cleaner corpus data for the Latin profiles.
 - Add more language-level support outside Latin later.
-
-The Python wrapper is planned as the following step, after the C++ API and the
-profile format are a bit more stable.
 
 ## License
 
